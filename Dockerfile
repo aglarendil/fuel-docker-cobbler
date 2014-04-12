@@ -5,16 +5,17 @@
 FROM centos
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
+ENV MIRROR_CENTOS @@MIRROR_CENTOS@@
+
 WORKDIR /root
 
 RUN rm -rf /etc/yum.repos.d/*
-RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(/sbin/ip route | awk '/default/ { print $3 }'):8080/centos/fuelweb/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
+RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=${MIRROR_CENTOS}\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
 RUN yum clean all
 RUN yum --quiet install -y ruby21-puppet
 RUN yum --quiet install -y httpd cobbler dnsmasq xinetd tftp-server
 
 ADD etc /etc
-ADD var /var
 RUN cp /etc/puppet/modules/nailgun/examples/cobbler-only.pp /root/init.pp
 #Workaround so cobbler sync works
 RUN ln -s /proc/mounts /etc/mtab
